@@ -56,16 +56,18 @@
     [self.reloadButton setEnabled:NO];
     
     [self.backButton setTitle:NSLocalizedString(@"Back", @"Back command") forState:UIControlStateNormal];
-    [self.backButton addTarget:self.webview action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    //[self.backButton addTarget:self.webview action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
     
     [self.forwardButton setTitle:NSLocalizedString(@"Forward", @"Forward command") forState:UIControlStateNormal];
-    [self.forwardButton addTarget:self.webview action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
+    //[self.forwardButton addTarget:self.webview action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
     
     [self.stopButton setTitle:NSLocalizedString(@"Stop", @"Stop command") forState:UIControlStateNormal];
-    [self.stopButton addTarget:self.webview action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
+    //[self.stopButton addTarget:self.webview action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
     
     [self.reloadButton setTitle:NSLocalizedString(@"Reload", @"Reload command") forState:UIControlStateNormal];
-    [self.reloadButton addTarget:self.webview action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+    //[self.reloadButton addTarget:self.webview action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+    
+    [self addButtonTargets]; // <-- button targets placed to the method
     
     /*
     NSString *urlString = @"http://wikipedia.org";
@@ -127,8 +129,41 @@
         currentButtonX += buttonWidth; // first button on the very left(0) + the width of that button so the second button will be placed beside it, then so on
     }
     
+    UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Halo!", @"welcome message") message:NSLocalizedString(@"This Web Browser is super private!", @"message") delegate:nil cancelButtonTitle:NSLocalizedString(@"Oh yeah? Let's use it!", @"confirmation button") otherButtonTitles:nil];
+    [alert show];
+    
 }
 
+
+
+- (void) resetWebView {
+    [self.webview removeFromSuperview];
+    
+    UIWebView *newWebView = [[UIWebView alloc] init];
+    newWebView.delegate = self;
+    [self.view addSubview:newWebView];
+    
+    self.webview = newWebView;
+    
+    [self addButtonTargets];
+    
+    self.textField.text = nil;
+    [self updateButtonsAndTitle];
+    
+   
+    
+}
+
+- (void) addButtonTargets {
+    for (UIButton *button in @[self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) {
+        [button removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
+    }
+    
+    [self.backButton addTarget:self.webview action:@selector(goBack) forControlEvents:UIControlEventTouchUpInside];
+    [self.forwardButton addTarget:self.webview action:@selector(goForward) forControlEvents:UIControlEventTouchUpInside];
+    [self.stopButton addTarget:self.webview action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
+    [self.reloadButton addTarget:self.webview action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
+}
 
 #pragma mark - UITextFieldDelegate
 
@@ -170,6 +205,7 @@
     //self.isLoading = YES; <-- multiple frame problem
     self.frameCount++;  // <-- lets say webpage + miniwebpage in webpage + video = counts up to 3 frames
     [self updateButtonsAndTitle];
+    
 }
 
 - (void)webViewDidFinishLoad:(UIWebView *)webView{
@@ -187,6 +223,7 @@
     
     [self updateButtonsAndTitle];
     self.frameCount--; // <-- considered as finish loading even if its error
+ 
     
 }
 
@@ -216,7 +253,7 @@
     //self.reloadButton.enabled = !self.isLoading;
     
     self.stopButton.enabled = self.frameCount > 0; // <-- pages are still loading, stop button is enabled
-    self.reloadButton.enabled = self.frameCount == 0; // <-- 0 means all pages loaded, reload button is enabled
+    self.reloadButton.enabled = self.webview.request.URL && self.frameCount == 0; // <-- 0 means all pages loaded, reload button is enabled. Addedd self.webview.request.URL "This change ensures that the web view has an NSURLRequest with accompanying NSURL. Otherwise, there'd be nothing to reload."
 }
 
 @end
