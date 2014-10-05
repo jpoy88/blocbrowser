@@ -7,6 +7,7 @@
 //
 
 #import "AppDelegate.h"
+#import "WebBrowserViewController.h"
 
 @interface AppDelegate ()
 
@@ -17,6 +18,16 @@
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
     // Override point for customization after application launch.
+    
+    
+    //Written below is the empty application solution from Stack Overflow, Looks like Bloc has initialize the same way too
+    self.window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+    self.window.backgroundColor = [UIColor whiteColor];
+    
+    self.window.rootViewController = [[UINavigationController alloc] initWithRootViewController:[[WebBrowserViewController alloc] init] ];
+    
+    
+    [self.window makeKeyAndVisible];
     return YES;
 }
 
