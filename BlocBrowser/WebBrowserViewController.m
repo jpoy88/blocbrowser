@@ -7,16 +7,23 @@
 //
 
 #import "WebBrowserViewController.h"
+#import "AwesomeFloatingToolbar.h"
 
-@interface WebBrowserViewController () <UIWebViewDelegate, UITextFieldDelegate>
+
+
+
+
+@interface WebBrowserViewController () <UIWebViewDelegate, UITextFieldDelegate, AwesomeFloatingToolbarDelegate>
 
 @property (nonatomic, strong) UIWebView *webview;
 @property (nonatomic, strong) UITextField *textField;
-@property (nonatomic, strong) UIButton *backButton;
-@property (nonatomic, strong) UIButton *forwardButton;
-@property (nonatomic, strong) UIButton *stopButton;
-@property (nonatomic, strong) UIButton *reloadButton;
+//@property (nonatomic, strong) UIButton *backButton; <-- removed with Toolbar Exercise
+//@property (nonatomic, strong) UIButton *forwardButton; <-- removed with Toolbar Exercise
+//@property (nonatomic, strong) UIButton *stopButton; <-- removed with Toolbar Exercise
+//@property (nonatomic, strong) UIButton *reloadButton; <-- removed with Toolbar Exercise
 @property (nonatomic, strong) UIActivityIndicatorView *activityIndicator;
+
+@property (nonatomic, strong) AwesomeFloatingToolbar *awesomeToolbar;
 
 //@property (nonatomic, assign) BOOL isLoading; <-- there is a problem with multiple frames (ex. webpage with videos with another page inside it)
 @property (nonatomic, assign) NSUInteger frameCount;
@@ -42,7 +49,7 @@
     self.textField.backgroundColor = [UIColor colorWithWhite:200/255.0f alpha:1];
     self.textField.delegate = self;
     
-    
+    /*
     self.backButton = [UIButton buttonWithType:UIButtonTypeSystem];
     [self.backButton setEnabled:NO];
     
@@ -68,6 +75,11 @@
     //[self.reloadButton addTarget:self.webview action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
     
     [self addButtonTargets]; // <-- button targets placed to the method
+    */
+    
+    self.awesomeToolbar = [[AwesomeFloatingToolbar alloc] initWithFourTitles:@[kWebBrowserBackString, kWebBrowserForwardString, kWebBrowserStopString, kWebBrowserRefreshString]];
+    self.awesomeToolbar.delegate = self;
+    
     
     /*
     NSString *urlString = @"http://wikipedia.org";
@@ -84,8 +96,10 @@
     [mainView addSubview:self.reloadButton];
     */
     
-    for (UIView *viewToAdd in @[self.webview, self.textField, self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) {
-        [mainView addSubview:viewToAdd];
+    //for (UIView *viewToAdd in @[self.webview, self.textField, self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) { <-- removed with Toolbar Exercise
+    for (UIView *viewToAdd in @[self.webview, self.textField, self.awesomeToolbar]){
+    
+            [mainView addSubview:viewToAdd];
     }
     
     self.view = mainView;
@@ -111,27 +125,41 @@
     
     
     //First, calculate some dimensions
+    
+    CGFloat viewWidth = [UIScreen mainScreen].bounds.size.width;
+    
     static CGFloat itemHeight = 50;
     CGFloat width = CGRectGetWidth(self.view.bounds);
-    CGFloat browserHeight = CGRectGetHeight(self.view.bounds) - itemHeight - itemHeight;
-    CGFloat buttonWidth = CGRectGetWidth(self.view.bounds) / 4;
+    //CGFloat browserHeight = CGRectGetHeight(self.view.bounds) - itemHeight - itemHeight; <-- removed with Toolbar Exercise
+    //CGFloat buttonWidth = CGRectGetWidth(self.view.bounds) / 4; <-- removed with Toolbar Exercise
+    
+    CGFloat browserHeight = CGRectGetHeight(self.view.bounds) - itemHeight;
+    
     
     //Now, assign the frames
     self.textField.frame = CGRectMake(0, 0, width, itemHeight);
     self.webview.frame = CGRectMake(0, CGRectGetMaxY(self.textField.frame), width, browserHeight);
     
+    
     //Loop assigning buttons
     
+    /*  <-- removed with Toolbar Exercise
     CGFloat currentButtonX = 0;
     
     for (UIButton *thisButton in @[self.backButton, self.forwardButton, self.stopButton, self.reloadButton]){
         thisButton.frame = CGRectMake(currentButtonX, CGRectGetMaxY(self.webview.frame), buttonWidth, itemHeight);
         currentButtonX += buttonWidth; // first button on the very left(0) + the width of that button so the second button will be placed beside it, then so on
     }
+    */
+     
+    self.awesomeToolbar.frame = CGRectMake(viewWidth / 64, 100, viewWidth - (viewWidth / 32), 60);
     
+    
+    
+    /*
     UIAlertView *alert = [[UIAlertView alloc] initWithTitle:NSLocalizedString(@"Halo!", @"welcome message") message:NSLocalizedString(@"This Web Browser is super private!", @"message") delegate:nil cancelButtonTitle:NSLocalizedString(@"Oh yeah? Let's use it!", @"confirmation button") otherButtonTitles:nil];
     [alert show];
-    
+    */
 }
 
 
@@ -145,7 +173,7 @@
     
     self.webview = newWebView;
     
-    [self addButtonTargets];
+    //[self addButtonTargets];
     
     self.textField.text = nil;
     [self updateButtonsAndTitle];
@@ -154,6 +182,7 @@
     
 }
 
+/*
 - (void) addButtonTargets {
     for (UIButton *button in @[self.backButton, self.forwardButton, self.stopButton, self.reloadButton]) {
         [button removeTarget:nil action:NULL forControlEvents:UIControlEventTouchUpInside];
@@ -164,7 +193,9 @@
     [self.stopButton addTarget:self.webview action:@selector(stopLoading) forControlEvents:UIControlEventTouchUpInside];
     [self.reloadButton addTarget:self.webview action:@selector(reload) forControlEvents:UIControlEventTouchUpInside];
 }
-
+*/
+ 
+ 
 #pragma mark - UITextFieldDelegate
 
 - (BOOL)textFieldShouldReturn:(UITextField *)textField {
@@ -181,7 +212,7 @@
         URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://www.google.com/search?q=%@", googleQuery]];
     }
     
-    if (!URL.scheme) {
+    else if (!URL.scheme) {
         // The user didn't type http: or https:
         URL = [NSURL URLWithString:[NSString stringWithFormat:@"http://%@", URLString]];
     }
@@ -247,13 +278,42 @@
     }
     
     
-    self.backButton.enabled = [self.webview canGoBack];
-    self.forwardButton.enabled = [self.webview canGoForward];
+    //self.backButton.enabled = [self.webview canGoBack];
+    //self.forwardButton.enabled = [self.webview canGoForward];
     //self.stopButton.enabled = self.isLoading;
     //self.reloadButton.enabled = !self.isLoading;
     
-    self.stopButton.enabled = self.frameCount > 0; // <-- pages are still loading, stop button is enabled
-    self.reloadButton.enabled = self.webview.request.URL && self.frameCount == 0; // <-- 0 means all pages loaded, reload button is enabled. Addedd self.webview.request.URL "This change ensures that the web view has an NSURLRequest with accompanying NSURL. Otherwise, there'd be nothing to reload."
+    //self.stopButton.enabled = self.frameCount > 0; // <-- pages are still loading, stop button is enabled
+    //self.reloadButton.enabled = self.webview.request.URL && self.frameCount == 0; // <-- 0 means all pages loaded, reload button is enabled. Addedd self.webview.request.URL "This change ensures that the web view has an NSURLRequest with accompanying NSURL. Otherwise, there'd be nothing to reload."
+    
+    [self.awesomeToolbar setEnabled:[self.webview canGoBack] forButtonWithTitle:kWebBrowserBackString];
+    [self.awesomeToolbar setEnabled:[self.webview canGoForward] forButtonWithTitle:kWebBrowserForwardString];
+    [self.awesomeToolbar setEnabled:self.frameCount > 0 forButtonWithTitle:kWebBrowserStopString];
+    [self.awesomeToolbar setEnabled:self.webview.request.URL && self.frameCount == 0 forButtonWithTitle:kWebBrowserRefreshString];
+    
 }
+
+
+
+
+#pragma mark - AwesomeFloatingToolbarDelegate
+
+-(void) floatingToolbar:(AwesomeFloatingToolbar *)toolbar didSelectButtonWithTitle:(NSString *)title {
+    
+    if ([title isEqual:NSLocalizedString(@"Back", @"Back command")]){
+        [self.webview goBack];
+    }
+    else if ([title isEqual:NSLocalizedString(@"Forward", @"Forward command")]) {
+        [self.webview goForward];
+    }
+    else if ([title isEqual:NSLocalizedString(@"Stop", @"Stop command")]) {
+        [self.webview stopLoading];
+    }
+    else if ([title isEqual:NSLocalizedString(@"Refresh", @"Reload command")]) {
+        [self.webview reload];
+    }
+    
+}
+
 
 @end
